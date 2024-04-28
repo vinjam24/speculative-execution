@@ -1,1 +1,14 @@
 Goal: To implement process roll back and checkpoint in a distributed file system with server-client architecture.
+
+For now, implement rollback and checkpoint templates. (Essentially 5.1)
+
+How is speculation implemented in the paper? Copy-on-write fork (5.1)
+how does speculator check whether the speculation is true or false?
+
+We will be simiulation create_speculation, commit_speculation.
+
+
+
+First step: Check how read in a distributed file system functions.
+
+By predicting the speculation, we mean fetching from cache. 
