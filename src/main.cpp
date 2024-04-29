@@ -12,7 +12,6 @@ int main() {
     int value;
 
     int fd = open(file_name, O_RDOLY); 
-    
 
     while((n=read(fd, value, BUFSIZE)) > 0){
         std::cout<<"File read!"<<std::endl;
