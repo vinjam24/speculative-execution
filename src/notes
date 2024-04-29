@@ -2,6 +2,7 @@ Goal: To implement process roll back and checkpoint in a distributed file system
 
 For now, implement rollback and checkpoint templates. (Essentially 5.1)
 
+Day 1 (04/28)
 How is speculation implemented in the paper? Copy-on-write fork (5.1)
 how does speculator check whether the speculation is true or false?
 
@@ -9,9 +10,19 @@ We will be simiulation create_speculation, commit_speculation.
 
 
 
-First step: Check how read in a distributed file system functions.
+First step: Check how read in a distributed file system functions. Skimmed.
 
 By predicting the speculation, we mean fetching from cache. 
 
+Implementing Cache.
 
-Having trouble adding code to files
+
+Having trouble adding Cache code to files. 
+
+Resolved template classes usage.
+
+Cache skeleton completed 
+
+One major doubt about cache. What to do in the case of a cache miss. Will now read up about cache miss.
+
+Will also look into jessy's code.
