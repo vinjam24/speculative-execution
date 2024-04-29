@@ -4,6 +4,8 @@
 #include "SpeculatorObject.h"
 
 class Speculator{
+    private:
+        SpeculativeObject *speculative_object;
     public:
         Speculator();
         void create_speculation();
