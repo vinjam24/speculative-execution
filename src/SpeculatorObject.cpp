@@ -1,11 +1,12 @@
 #include "SpeculatorObject.h"
 
-SpeculatorObject::SpeculatorObject() {}
+template<typename T1, typename T2>
+SpeculatorObject<T1, T2>::SpeculatorObject() {}
 
-int SpeculatorObject::getX(){
-    return x;
+int SpeculatorObject::get(T1 key){
+    return kernelObjects[key];
 }
 
-void SpeculatorObject::setX(int value){
-    x = value;
+void SpeculatorObject::setX(T1 key, T2 value){
+    kernelObjects[key] = value;
 }

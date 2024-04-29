@@ -11,7 +11,6 @@ Syscall::Syscall() {};
 
 Syscall::int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
-    Speculator *speculator = new Speculator();
     
     // 1. Create child process
     pid_t pid = fork();
@@ -23,13 +22,18 @@ Syscall::int speculative_read(int file_descriptor, char* buffer, int buffer_size
         }
 
     } else if (pid > 0) {
+        // 2. Create a speculative Object and save speculative state
+        Speculator *speculator = new Speculator();
+
+        // 3. Spawn a thread to perform actual read operation
+        
+
+        // 4. Commit/fail speculation based on thread's output
+
+
 
     }
 
-    // 2. Create a speculative Object
-
-    // 3. Spawn a thread to perform actual read operation
-
-    // 4. Commit/fail speculation based on thread's output
+    
 
 }
