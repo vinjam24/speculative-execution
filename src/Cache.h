@@ -1,10 +1,9 @@
 #ifndef CACHE_H
 #define CACHE_H
-using namespace std;
 #include <unordered_map>
 #include <iostream>
 
-template<typename KeyType = string, typename ValueType>
+template<typename KeyType, typename ValueType>
 class Cache {
 private:
     struct Node {
@@ -13,7 +12,7 @@ private:
         Node* next;
     };
 
-    unordered_map<KeyType, Node*> cacheMap;
+    std::unordered_map<KeyType, Node*> cacheMap;
     Node* head;
     Node* tail;
     size_t capacity;

@@ -1,23 +1,30 @@
-#include "cache.h"
+#include "Cache.h"
 
-template<typename KeyType, typename ValueType>
+template <typename KeyType, typename ValueType>
 Cache<KeyType, ValueType>::Cache(size_t cap) : capacity(cap), head(nullptr), tail(nullptr) {}
 
-template<typename KeyType, typename ValueType>
-Cache<KeyType, ValueType>::~Cache() {
-    for (auto& it : cacheMap) {
+template <typename KeyType, typename ValueType>
+Cache<KeyType, ValueType>::~Cache()
+{
+    for (auto &it : cacheMap)
+    {
         delete it.second;
     }
 }
 
-template<typename KeyType, typename ValueType>
-void Cache<KeyType, ValueType>::moveToHead(Node* node) {
-    if (node == head) return;
+template <typename KeyType, typename ValueType>
+void Cache<KeyType, ValueType>::moveToHead(Node *node)
+{
+    if (node == head)
+        return;
 
-    if (node == tail) {
+    if (node == tail)
+    {
         tail = tail->prev;
         tail->next = nullptr;
-    } else {
+    }
+    else
+    {
         node->prev->next = node->next;
         node->next->prev = node->prev;
     }
@@ -28,22 +35,32 @@ void Cache<KeyType, ValueType>::moveToHead(Node* node) {
     head = node;
 }
 
-template<typename KeyType, typename ValueType>
-void Cache<KeyType, ValueType>::put(KeyType key, ValueType value) {
+template <typename KeyType, typename ValueType>
+void Cache<KeyType, ValueType>::put(KeyType key, ValueType value)
+{
     auto it = cacheMap.find(key);
-    if (it != cacheMap.end()) {
-        Node* node = it->second;
+    if (it != cacheMap.end())
+    {
+        Node *node = it->second;
         node->value = value;
         moveToHead(node);
-    } else {
-        Node* newNode = new Node{value, nullptr, head};
-        if (head) head->prev = newNode;
+    }
+    else
+    {
+        Node *newNode = new Node;
+        newNode->value = value;
+        newNode->prev = nullptr;
+        newNode->next = head;
+        if (head)
+            head->prev = newNode;
         head = newNode;
-        if (!tail) tail = newNode;
+        if (!tail)
+            tail = newNode;
         cacheMap[key] = newNode;
 
-        if (cacheMap.size() > capacity) {
-            Node* temp = tail;
+        if (cacheMap.size() > capacity)
+        {
+            Node *temp = tail;
             tail = tail->prev;
             tail->next = nullptr;
             cacheMap.erase(cacheMap.find(temp->value));
@@ -52,14 +69,15 @@ void Cache<KeyType, ValueType>::put(KeyType key, ValueType value) {
     }
 }
 
-template<typename KeyType, typename ValueType>
-bool Cache<KeyType, ValueType>::get(KeyType key, ValueType& value) {
+template <typename KeyType, typename ValueType>
+bool Cache<KeyType, ValueType>::get(KeyType key, ValueType &value)
+{
     auto it = cacheMap.find(key);
-    if (it != cacheMap.end()) {
+    if (it != cacheMap.end())
+    {
         value = it->second->value;
         moveToHead(it->second);
         return true;
     }
     return false;
 }
-
