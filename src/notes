@@ -11,4 +11,4 @@ We will be simiulation create_speculation, commit_speculation.
 
 First step: Check how read in a distributed file system functions.
 
-By predicting the speculation, we mean fetching from cache. 
+By predicting the speculation, we mean fetching from cache. l
