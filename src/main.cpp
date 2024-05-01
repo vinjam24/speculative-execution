@@ -1,21 +1,38 @@
 #include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "Speculator.h"
-using namespace std;
+#include "Globals.h"
+#include "Syscall.h"
 
 #define BUFSIZE 4
 
 int main() {
 
-    char* file_name = "/path/to/file";
 
-    int value;
+    const char* file_name = "/path/to/file";
 
-    int fd = open(file_name, O_RDOLY); 
-
-    while((n=read(fd, value, BUFSIZE)) > 0){
-        std::cout<<"File read!"<<std::endl;
+    // Initialize Cache to Speculate values from
+    char cached_value[BUFSIZE];
+    for(int i=0;i<BUFSIZE;i++){
+        cached_value[i] = 'a';
     }
+
+    // Main execution
+    char value[BUFSIZE];
+    int fd = open(file_name, O_RDONLY); 
+    cache[fd] = cached_value;
+    speculator = new Speculator();
+
+    speculative_read(fd, value, BUFSIZE);
+
+    for(int i=0;i<100;i++){
+        sleep(1);
+        std::cout<<i<<std::endl;
+    }
+    
+    close(fd);
     
     return 0;
 }
