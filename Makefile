@@ -5,7 +5,7 @@ SRC_DIRS := ./src
 
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
-SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c' -or -name '*.s')
+SRCS := ./src/SpeculatorObject.cpp ./src/Speculator.cpp ./src/Globals.cpp ./src/Syscall.cpp ./src/main.cpp
 
 # Prepends BUILD_DIR and appends .o to every src file
 # As an example, ./your_dir/hello.cpp turns into ./build/./your_dir/hello.cpp.o

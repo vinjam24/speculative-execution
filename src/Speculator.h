@@ -2,6 +2,7 @@
 #define SPECULATOR_H
 
 #include "SpeculatorObject.h"
+#include "SpeculatorObject.cpp"
 #include<sys/types.h>
 
 class Speculator{
