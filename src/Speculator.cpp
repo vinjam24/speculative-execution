@@ -6,38 +6,40 @@
 #include "SpeculatorObject.h"
 
 
-Speculator::Speculator() {
-    child_processes = new SpeculatorObject<char*, pid_t>();
-    cache_objects = new SpeculatorObject<char*, char*>();
+Speculator::Speculator() {}
 
-}
-
-void Speculator::create_speculation(pid_t pid, int file_descriptor){
-    char* pid_key = "PID";
-    char* cache_object_key = "return_value";
-    child_processes->kernelObjects[pid_key] = pid;
-    cache_objects->kernelObjects[cache_object_key] = cache[file_descriptor];
+void Speculator::create_speculation(pid_t pid, int file_descriptor, int buffer_size, int pipe_value){
+    child_process = pid;
+    cache_object = cache[file_descriptor];
+    buffer_size = buffer_size;
+    pipe_value = pipe_value;
     std::cout<<"Created Speculation!"<<std::endl;
 }
 
 void Speculator::validate_speculation(std::vector<char> actual_buffer, int buffer_size){
+    bool fail_flag = false;
     for(int i=0;i<buffer_size;i++){
-        if(actual_buffer[i] != cache_objects->kernelObjects["return_value"][i]){
-            std::cout<<actual_buffer[i]<<" "<<cache_objects->kernelObjects["return_value"][i]<<std::endl;
-            Speculator::fail_speculation();
-            return;
+        if(actual_buffer[i] != cache_object[i]){
+            cache_object[i] = actual_buffer[i];
+            fail_flag = true;
+            std::cout<<actual_buffer[i]<<" "<<cache_object[i]<<std::endl;
         }
     }
-    Speculator::commit_speculation();
-
+    fail_flag ? fail_speculation() : commit_speculation();
+    return;
 }
 
 void Speculator::commit_speculation(){
-    kill(child_processes->kernelObjects["PID"], SIGKILL);
+    kill(child_process, SIGKILL);
     std::cout<<"Commit Speculation!"<<std::endl;
+    return;
 }
 
 void Speculator::fail_speculation(){
-    kill(child_processes->kernelObjects["PID"], SIGUSR1);
+    
+    write(pipe_value, cache_object, buffer_size);
+    // Put child process back on run queue
+    kill(child_process, SIGUSR1);
     std::cout<<"Fail Speculation!"<<std::endl;
+    return;
 }
