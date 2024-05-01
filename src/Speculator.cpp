@@ -2,9 +2,14 @@
 #include "Globals.h"
 #include <iostream>
 #include <signal.h>
+#include "SpeculatorObject.h"
 
 
-Speculator::Speculator() {}
+Speculator::Speculator() {
+    child_processes = new SpeculatorObject<char*, pid_t>();
+    cache_objects = new SpeculatorObject<char*, char*>();
+
+}
 
 void Speculator::create_speculation(pid_t pid, int file_descriptor){
     char* pid_key = "PID";

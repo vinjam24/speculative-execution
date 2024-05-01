@@ -8,6 +8,16 @@
 #include <iostream>
 #include <cstdlib>
 #include <thread>
+#include <iostream>
+
+void thread_function(int file_descriptor, int buffer_size, Speculator* speculator){
+    char actual_buffer[buffer_size];
+    int n;
+    while((read(file_descriptor, actual_buffer, buffer_size)) > 0){
+        std::cout<<"Actual Reading"<<std::endl;
+    }
+    speculator->validate_speculation(actual_buffer, buffer_size);    
+},
 
 using namespace std;
 
@@ -32,16 +42,7 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
         }
 
         // 3. Spawn a thread to perform actual read operation
-        std::thread t1([](int file_descriptor, int buffer_size, Speculator* speculator){
-            char actual_buffer[buffer_size];
-            int n;
-            while((read(file_descriptor, actual_buffer, buffer_size)) > 0){
-                std::cout<<"Actual Reading"<<std::endl;
-            }
-            speculator->validate_speculation(actual_buffer, buffer_size);
-            
-            
-        }, file_descriptor, buffer_size, speculator);
+        std::thread t1(thread_function, file_descriptor, buffer_size, speculator);
 
         return 1;
 
