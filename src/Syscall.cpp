@@ -9,6 +9,8 @@
 #include <cstdlib>
 #include <thread>
 
+using namespace std;
+
 int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
     // 1. Create child process
@@ -24,7 +26,6 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
     } else if (pid > 0) {
         // 2. Create a speculative Object and save speculative state
         speculator->create_speculation(pid, file_descriptor);
-        
         char* cached_buffer = cache[file_descriptor];
         for(int i=0; i<buffer_size; i++){
             buffer[i] = cached_buffer[i];
@@ -46,7 +47,4 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
 
     }
-
-    
-
 }

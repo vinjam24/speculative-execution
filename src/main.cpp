@@ -8,6 +8,7 @@
 
 #define BUFSIZE 4
 
+using namespace std;
 int main() {
 
 
@@ -21,10 +22,9 @@ int main() {
 
     // Main execution
     char value[BUFSIZE];
-    int fd = open(file_name, O_RDONLY); 
+    int fd = open(file_name, O_RDONLY);
     cache[fd] = cached_value;
     speculator = new Speculator();
-
     speculative_read(fd, value, BUFSIZE);
 
     for(int i=0;i<100;i++){
