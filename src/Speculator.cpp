@@ -2,6 +2,7 @@
 #include "Globals.h"
 #include <iostream>
 #include <signal.h>
+#include<vector>
 #include "SpeculatorObject.h"
 
 
@@ -19,10 +20,12 @@ void Speculator::create_speculation(pid_t pid, int file_descriptor){
     std::cout<<"Created Speculation!"<<std::endl;
 }
 
-void Speculator::validate_speculation(char* actual_buffer, int buffer_size){
+void Speculator::validate_speculation(std::vector<char> actual_buffer, int buffer_size){
     for(int i=0;i<buffer_size;i++){
         if(actual_buffer[i] != cache_objects->kernelObjects["return_value"][i]){
+            std::cout<<actual_buffer[i]<<" "<<cache_objects->kernelObjects["return_value"][i]<<std::endl;
             Speculator::fail_speculation();
+            return;
         }
     }
     Speculator::commit_speculation();

@@ -11,7 +11,7 @@
 int main() {
 
 
-    const char* file_name = "/path/to/file";
+    const char* file_name = "./files/example.txt";
 
     // Initialize Cache to Speculate values from
     char cached_value[BUFSIZE];

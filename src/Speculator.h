@@ -4,6 +4,7 @@
 #include "SpeculatorObject.h"
 #include "SpeculatorObject.cpp"
 #include<sys/types.h>
+#include<vector>
 
 class Speculator{
     private:
@@ -12,7 +13,7 @@ class Speculator{
     public:
         Speculator();
         void create_speculation(pid_t pid, int file_descriptor);
-        void validate_speculation(char* buffer, int buffer_size);
+        void validate_speculation(std::vector<char> buffer, int buffer_size);
         void commit_speculation();
         void fail_speculation();
     

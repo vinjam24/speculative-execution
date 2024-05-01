@@ -9,15 +9,20 @@
 #include <cstdlib>
 #include <thread>
 #include <iostream>
+#include<vector>
 
 void thread_function(int file_descriptor, int buffer_size, Speculator* speculator){
-    char actual_buffer[buffer_size];
-    int n;
-    while((read(file_descriptor, actual_buffer, buffer_size)) > 0){
+    std::cout<<"Huh"<<std::endl;
+    std::vector<char> actual_buffer(buffer_size);
+    ssize_t bytes_read;
+    if((read(file_descriptor, actual_buffer.data(), buffer_size)) > 0){
         std::cout<<"Actual Reading"<<std::endl;
+    }else{
+        std::cout<<"Error"<<std::endl;
     }
     speculator->validate_speculation(actual_buffer, buffer_size);    
-},
+    return;
+}
 
 int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
@@ -39,10 +44,9 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
         for(int i=0; i<buffer_size; i++){
             buffer[i] = cached_buffer[i];
         }
-
         // 3. Spawn a thread to perform actual read operation
         std::thread t1(thread_function, file_descriptor, buffer_size, speculator);
-
+        t1.join();
         return 1;
 
 
