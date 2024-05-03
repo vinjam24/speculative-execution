@@ -15,7 +15,7 @@ class Speculator{
         int pipe_value;
         int buffer_size;
         Speculator();
-        void create_speculation(pid_t pid, int file_descriptor, int buffer_size, int pipe_value);
+        void create_speculation(pid_t pid, int file_descriptor, int buff, int pipe);
         void validate_speculation(std::vector<char> buffer, int buffer_size);
         void commit_speculation();
         void fail_speculation();

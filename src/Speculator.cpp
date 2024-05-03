@@ -2,17 +2,18 @@
 #include "Globals.h"
 #include <iostream>
 #include <signal.h>
+#include <unistd.h>
 #include<vector>
 #include "SpeculatorObject.h"
 
 
 Speculator::Speculator() {}
 
-void Speculator::create_speculation(pid_t pid, int file_descriptor, int buffer_size, int pipe_value){
+void Speculator::create_speculation(pid_t pid, int file_descriptor, int buff, int pipe){
     child_process = pid;
     cache_object = cache[file_descriptor];
-    buffer_size = buffer_size;
-    pipe_value = pipe_value;
+    buffer_size = buff;
+    pipe_value = pipe;
     std::cout<<"Created Speculation!"<<std::endl;
 }
 
@@ -36,8 +37,8 @@ void Speculator::commit_speculation(){
 }
 
 void Speculator::fail_speculation(){
-    
-    write(pipe_value, cache_object, buffer_size);
+
+    ssize_t bytes_written = write(pipe_value, cache_object, buffer_size);
     // Put child process back on run queue
     kill(child_process, SIGUSR1);
     std::cout<<"Fail Speculation!"<<std::endl;
