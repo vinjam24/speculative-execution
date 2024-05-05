@@ -10,6 +10,7 @@ class Speculator{
     private:
         pid_t child_process;
     public:
+        // Store all speculations somewhere; 
         char* buffer_value;
         char* cache_object;
         int pipe_value;
