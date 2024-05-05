@@ -9,7 +9,8 @@
 #include <cstdlib>
 #include <thread>
 #include <iostream>
-#include<vector>
+#include <vector>
+#include <cstdarg>
 
 void thread_function(pid_t pid, int file_descriptor, char* buffer, int buffer_size, int pipe_value){
     // Create Speculation in the detached thread
@@ -27,6 +28,21 @@ void thread_function(pid_t pid, int file_descriptor, char* buffer, int buffer_si
 
 using namespace std;
 
+int speculative_print(const char* output_string, ...){
+    va_list args;
+    int count_size = 0;
+
+    va_start(args, output_string);
+
+    if(speculator->buffer_IO(output_string, &args) == -1){
+        vprintf(output_string, args);
+    }
+
+    va_end(args);
+    
+    return count_size;
+}
+
 int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
     // 1. Create child process
@@ -36,20 +52,11 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 
     if(pid == 0){
         // 1.1 Save kernel Objects in Child Process
-        close(pipe_fds[1]);
         signal(SIGUSR1, [](int signum){
             return;
         });
         pause();
-        char check[4];
-
-        std::cout<<read(pipe_fds[0], check, 4)<<std::endl;
-        std::cout<<"Hell! "<<buffer_size<<std::endl;
-        for(int i=0;i<buffer_size;i++){
-            std::cout<<"Hi "<<std::endl;
-            std::cout<<check[i]<<std::endl;
-            buffer[i] = check[i];
-        }
+        read(pipe_fds[0], buffer, buffer_size);
         close(pipe_fds[0]);
 
         return 1;

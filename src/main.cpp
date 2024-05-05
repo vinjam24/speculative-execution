@@ -25,11 +25,13 @@ int main() {
     int fd = open(file_name, O_RDONLY);
     cache[fd] = cached_value;
     speculator = new Speculator();
+
+    
     speculative_read(fd, value, BUFSIZE);
 
     for(int i=0;i<BUFSIZE;i++){
         sleep(1);
-        std::cout<<value[i]<<std::endl;
+        speculative_print("%c\n", value[i]);
     }
     
     close(fd);

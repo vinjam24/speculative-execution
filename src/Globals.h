@@ -6,6 +6,7 @@
 #include "Cache.h"
 #include "Speculator.h"
 #include <sys/types.h>
+#include <map>
 
 extern std::map<int,  char*> cache;
 extern Speculator* speculator;
