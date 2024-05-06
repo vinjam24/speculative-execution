@@ -11,9 +11,9 @@
 #include <iostream>
 #include <vector>
 #include <cstdarg>
-void thread_function(pid_t pid, int file_descriptor, char* buffer, int buffer_size, int pipe_value){
+void thread_function(pid_t pid, pid_t parent_pid, int file_descriptor, char* buffer, int buffer_size, int pipe_value){
     // Create Speculation in the detached thread
-    speculator->create_speculation(pid, file_descriptor, buffer_size, pipe_value);
+    speculator->create_speculation(pid, parent_pid, file_descriptor, buffer_size, pipe_value);
     std::vector<char> actual_buffer(buffer_size);
     ssize_t bytes_read;
     if((read(file_descriptor, actual_buffer.data(), buffer_size)) > 0){
@@ -67,8 +67,9 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
         for(int i=0; i<buffer_size; i++){
             buffer[i] = cached_buffer[i];
         }
+        pid_t parent_pid = getpid();
         // 3. Spawn a thread to perform actual read operation
-        std::thread t1(thread_function, pid, file_descriptor, buffer, buffer_size, pipe_fds[1]);
+        std::thread t1(thread_function, pid, parent_pid, file_descriptor, buffer, buffer_size, pipe_fds[1]);
         t1.detach();
         return 1;
 

@@ -5,7 +5,9 @@
 #include <queue>
 #include <utility>
 #include <cstdarg>
+#include <vector>
 
+class UndoLog;
 
 typedef struct {
     pid_t parent_pid;
@@ -17,6 +19,7 @@ typedef struct {
     bool is_speculative;
     std::queue<std::pair<const char*, va_list*> > IO_buffer_queue;
     // Speculator object should contain references to UndoLogs
+    std::vector<UndoLog*> undologs;
 
 
 } SpeculatorObject;

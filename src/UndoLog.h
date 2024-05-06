@@ -2,18 +2,34 @@
 #define UNDOLOG_H
 
 #include "SpeculatorObject.h"
+#include <vector>
 class UndoLog{
     private:
     struct Entry {
         char* prev_state;
         SpeculatorObject* speculator_object;
     };
-    std::vector<Entry> entries;
+
+    struct ProcessEntry {
+        pid_t checkpoint_id;
+        SpeculatorObject* speculator_object;
+    };
+
+    
 
     public:
-    UndoLog(char* prev_state, SpeculatorObject* speculator_object);
+    std::vector<Entry> entries;
+    char* file_name;
+    std::vector<ProcessEntry> p_entries;
+    UndoLog(char* prev_state, SpeculatorObject* speculator_object, char* file_name);
+    UndoLog(pid_t id, SpeculatorObject* speculator_object);
     ~UndoLog();
     void add_to_undo_log(SpeculatorObject* speculator_object, char* prev_state);
+    void add_to_undo_log(SpeculatorObject* speculator_object, pid_t id);
+    void remove_entry(SpeculatorObject* speculator_object);
+    void add_dependencies(SpeculatorObject* speculator_object);
+    bool speculation_exists(Entry entry);
+    void revert_till(SpeculatorObject* speculator_object);
 
     // Undolog should contain process checkpoint reference. (Each process is associated with a undolog)
     // Undo log should also support for kernel objects.
