@@ -13,7 +13,7 @@
 #include <cstdarg>
 void thread_function(pid_t pid, pid_t parent_pid, int file_descriptor, char* buffer, int buffer_size, int pipe_value){
     // Create Speculation in the detached thread
-    speculator->create_speculation(pid, parent_pid, file_descriptor, buffer_size, pipe_value);
+    int spec_id = speculator->create_speculation(pid, parent_pid, file_descriptor, buffer_size, pipe_value);
     std::vector<char> actual_buffer(buffer_size);
     ssize_t bytes_read;
     if((read(file_descriptor, actual_buffer.data(), buffer_size)) > 0){
@@ -21,7 +21,7 @@ void thread_function(pid_t pid, pid_t parent_pid, int file_descriptor, char* buf
     }else{
         std::cout<<"Error"<<std::endl;
     }
-    speculator->validate_speculation(actual_buffer, buffer_size);    
+    speculator->validate_speculation(actual_buffer, buffer_size, spec_id);    
     return;
 }
 
@@ -78,5 +78,8 @@ int speculative_read(int file_descriptor, char* buffer, int buffer_size){
 }
 
 int write_speculatively(char* file_name, const char* buffer, int buffer_size){
-    speculator->write_speculatively(file_name, buffer, buffer_size);
+    pid_t pid = getpid(); 
+    cout << "kojjaaa\n";
+    speculator->write_speculatively(file_name, buffer, buffer_size, pid);
+    return 0;
 }

@@ -10,6 +10,11 @@ UndoLog::UndoLog(char* prev_state, SpeculatorObject* speculator_object, char* fi
 }
 
 void UndoLog::add_to_undo_log(SpeculatorObject* speculator_object, char* prev_state){
+    for(auto ent : this->entries){
+        if(ent.speculator_object == speculator_object) {
+            return;
+        }
+    }
     Entry entry;
     entry.prev_state = prev_state;
     entry.speculator_object = speculator_object;

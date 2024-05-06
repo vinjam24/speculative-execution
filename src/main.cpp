@@ -34,7 +34,7 @@ int main() {
     
     speculative_read(fd, value, BUFSIZE);
 
-    write_speculatively(write_spec_file_name, content, BUFSIZE);
+    // write_speculatively(write_spec_file_name, content, BUFSIZE);
 
 
 
