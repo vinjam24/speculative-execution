@@ -90,11 +90,12 @@ int Speculator::buffer_IO(const char *output_value, va_list *args) {
 
 int Speculator::write_speculatively(char* file_name, const char *content,
                                     int buffer_size) {
-  if (!Speculator::speculator_object->is_speculative) {
-    return -1;
-  }
-  char* prev_state;
-  int fd = open(file_name, O_WRONLY);
+  // if (!Speculator::speculator_object->is_speculative) {
+  //   return -1;
+  // }
+  char prev_state[buffer_size+1];
+  int fd = open(file_name, O_RDWR);
+  // Adding just one speculation
   read(fd, prev_state, buffer_size);
   if (Speculator::file_to_undo_log_map.find(file_name) ==
       Speculator::file_to_undo_log_map.end()) {
@@ -108,7 +109,13 @@ int Speculator::write_speculatively(char* file_name, const char *content,
     undo->add_to_undo_log(Speculator::speculator_object, prev_state);
   }
 
+  if (ftruncate(fd, 0) == -1) {
+        std::cerr << "Failed to truncate file\n";
+        close(fd);
+        return 0;
+  }
   write(fd, content, buffer_size);
+  close(fd);
   return 0;
 
   // Where to store the undo log

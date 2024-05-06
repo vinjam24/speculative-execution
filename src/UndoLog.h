@@ -11,7 +11,6 @@ class UndoLog{
     std::vector<Entry> entries;
 
     public:
-    
     UndoLog(char* prev_state, SpeculatorObject* speculator_object);
     ~UndoLog();
     void add_to_undo_log(SpeculatorObject* speculator_object, char* prev_state);

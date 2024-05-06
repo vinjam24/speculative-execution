@@ -13,8 +13,8 @@ int main() {
 
 
     const char* file_name = "./files/example.txt";
-    const char* write_spec_file_name = "./files/example1.txt";
-    const char* content = "pook";
+    char* write_spec_file_name = "./files/example1.txt";
+    const char* content = "bhav";
 
 
     // Initialize Cache to Speculate values from
@@ -25,7 +25,9 @@ int main() {
 
     // Main execution
     char value[BUFSIZE];
-    int fd = open(file_name, O_RDONLY);
+    int fd = open(file_name, O_RDWR);
+    int koj = open(write_spec_file_name, O_RDONLY);
+
     cache[fd] = cached_value;
     speculator = new Speculator();
 
@@ -41,7 +43,7 @@ int main() {
         speculative_print("%c\n", value[i]);
     }
     
-    close(fd);
+
     
     return 0;
 }
