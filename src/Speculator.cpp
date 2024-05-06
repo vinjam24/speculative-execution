@@ -96,6 +96,23 @@ void Speculator::commit_speculation(int spec_id) {
   return;
 }
 
+
+void Speculator::revert_kernel_undo_logs(SpeculatorObject* speculator_object){
+  std::vector<UndoLog*> undos = speculator_object->undologs;
+  for(int i = 0 ; i < undos.size(); i++){
+    undos[i]->revert_till(speculator_object);
+  }
+}
+
+void Speculator::delete_undo_log_entries(SpeculatorObject* speculator_object){
+  int i = 0;
+  std::vector<UndoLog*> undologs = speculator_object->undologs;
+  for(i = 0; i < undologs.size(); i++){
+    UndoLog* ul =  undologs[i];
+    ul->remove_entry(speculator_object);
+  }
+}
+
 void Speculator::fail_speculation(int spec_id) {
 
   ssize_t bytes_written =

@@ -2,7 +2,10 @@ TARGET_EXEC := final_program
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
-CXXFLAGS = -std=c++11 -Wall -Wextra -g -arch -arm64
+# CXXFLAGS = -std=c++11 -Wall -Wextra -g -arch arm64
+CXXFLAGS := -std=c++11 -I./src -MMD -MP -arch arm64
+# Linker flags
+LDFLAGS := -arch arm64
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
 SRCS := ./src/Speculator.cpp ./src/Globals.cpp ./src/Syscall.cpp ./src/main.cpp ./src/Queue.cpp ./src/UndoLog.cpp
