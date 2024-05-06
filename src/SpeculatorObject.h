@@ -7,6 +7,8 @@
 #include <cstdarg>
 #include <vector>
 
+#define MAX_UNDOLOGS 1000
+
 class UndoLog;
 
 typedef struct SpeculatorObject{

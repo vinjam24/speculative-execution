@@ -3,6 +3,9 @@
 
 #include "SpeculatorObject.h"
 #include <vector>
+
+#define MAX_SIZE 1000
+
 class UndoLog{
     private:
     struct Entry {
@@ -18,9 +21,11 @@ class UndoLog{
     
 
     public:
-    std::vector<Entry> entries;
+    Entry entries[MAX_SIZE];
+    int entry_cnt;
+    int p_entry_cnt;
     char* file_name;
-    std::vector<ProcessEntry> p_entries;
+    ProcessEntry p_entries[MAX_SIZE];
     UndoLog(char* prev_state, SpeculatorObject* speculator_object, char* file_name);
     UndoLog(pid_t id, SpeculatorObject* speculator_object);
     ~UndoLog();

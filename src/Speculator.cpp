@@ -2,6 +2,7 @@
 #include "Globals.h"
 #include "SpeculatorObject.h"
 #include "UndoLog.h"
+#include <cstring>
 #include <iostream>
 #include <ostream>
 #include <signal.h>
@@ -16,6 +17,9 @@
 Speculator::Speculator() {
   Speculator::spec_counter = 0;
   speculator_object = new SpeculatorObject;
+  this->file_ul_cnt = 0;
+  this->pid_ul_cnt = 0;
+  this->id_spec_cnt = 0;
 }
 
 void Speculator::propogate_buffer(){
@@ -50,8 +54,8 @@ int Speculator::create_speculation(pid_t ppid, pid_t pid, int file_descriptor,
   spec->buffer_size = buffer_size;
   spec->pipe_fd = pipe;
   spec->parent_pid = ppid;
-  Speculator::id_to_speculation[Speculator::spec_counter] = spec;
-
+  this->id_to_speculation[this->id_spec_cnt].spec = spec;
+  this->id_to_speculation[this->id_spec_cnt++].spec_id = this->spec_counter++;
   /*TODO: Remove below*/
 
   speculator_object->is_speculative = true;
@@ -61,8 +65,10 @@ int Speculator::create_speculation(pid_t ppid, pid_t pid, int file_descriptor,
   speculator_object->pipe_fd = pipe;
   speculator_object->parent_pid = ppid;
 
-  process_to_undo_log_map[ppid] = new UndoLog(pid, spec);
-  spec->undologs.push_back(process_to_undo_log_map[ppid]);
+  process_to_undo_log_map[this->pid_ul_cnt].undo_log = new UndoLog(pid, spec);
+  process_to_undo_log_map[this->pid_ul_cnt].pid =ppid;
+
+  spec->undologs.push_back(process_to_undo_log_map[this->pid_ul_cnt++].undo_log);
 
   std::cout << "Created Speculation!" << std::endl;
   return Speculator::spec_counter++;
@@ -80,11 +86,24 @@ void Speculator::validate_speculation(std::vector<char> actual_buffer, int buffe
     return;
 }
 
+SpeculatorObject* Speculator::findWith(int spec_id){
+  int spec_idx;
+  SpeculatorObject* speculator_object = nullptr;
+  // Find speculator object with the given spec_id;
+  for(int i =0; this->spec_counter; i++) {
+    if(this->id_to_speculation[i].spec_id == spec_id){
+      speculator_object = this->id_to_speculation[i].spec;
+      break;
+    }
+  }
+  return speculator_object;
+}
+
 void Speculator::commit_speculation(int spec_id) {
-
   
-  SpeculatorObject* speculator_object = id_to_speculation[spec_id];
-
+  
+  // SpeculatorObject* speculator_object = id_to_speculation[spec_id];
+  SpeculatorObject* speculator_object = this->findWith(spec_id);
   // Remove entries in undologs with the given speculator;
 
   Speculator::propogate_buffer();
@@ -119,7 +138,7 @@ void Speculator::fail_speculation(int spec_id) {
       write(speculator_object->pipe_fd, speculator_object->cache_object,
             speculator_object->buffer_size);
   close(speculator_object->pipe_fd);
-  SpeculatorObject* speculator_object = id_to_speculation[spec_id];
+  SpeculatorObject* speculator_object = this->findWith(spec_id);
   // revert state of kernel objects using undo log
   Speculator::revert_kernel_undo_logs(speculator_object);
 
@@ -145,6 +164,29 @@ int Speculator::buffer_IO(const char *output_value, va_list* args)
     return 0;
 }
 
+UndoLog* Speculator::findProcessUndoWith(int p_id){
+  UndoLog* undo = nullptr;
+  int undo_idx = -1;
+  for(int i =0 ; i < this->pid_ul_cnt; i++){
+    if(this->process_to_undo_log_map[i].pid == p_id){
+      undo = this->process_to_undo_log_map[i].undo_log;
+      break;
+    }
+  }
+  return undo;
+}
+
+UndoLog* Speculator::findFileUndoWith(char* file_name){
+  int undo_idx = -1;
+  for(int i = 0; i < this->file_ul_cnt; i++){
+    if(strcmp(this->file_to_undo_log_map[i].file_name,file_name) ==0 ){
+      return this->file_to_undo_log_map[i].undo_log;
+    }
+  }
+
+  return nullptr;
+}
+
 int Speculator::write_speculatively(char* file_name, const char *content,
                                     int buffer_size, pid_t pid) {
 /*TODO*/                      
@@ -155,27 +197,35 @@ int Speculator::write_speculatively(char* file_name, const char *content,
   std::cout<< "writing speculatively\n";
   
   std::cout << pid << std::endl;
-  SpeculatorObject* speculator_object = this->process_to_undo_log_map[pid]->entries.back().speculator_object;
+  UndoLog* undo_tmp = this->findProcessUndoWith(pid);
+  SpeculatorObject* speculator_object = undo_tmp->entries[undo_tmp->entry_cnt].speculator_object;
 
   char prev_state[buffer_size+1];
   int fd = open(file_name, O_RDWR);
   // Adding just one speculation
   read(fd, prev_state, buffer_size);
-  if (Speculator::file_to_undo_log_map.find(file_name) ==
-      Speculator::file_to_undo_log_map.end()) {
+  if(this->findFileUndoWith(file_name) == nullptr){
+  // if (Speculator::file_to_undo_log_map.find(file_name) ==
+      // Speculator::file_to_undo_log_map.end()) {
 
         // If there is no undo log corresponding to the file
         UndoLog* undo = new UndoLog(prev_state, speculator_object, file_name);
-        file_to_undo_log_map[file_name] = undo;
+        file_to_undo_log_map[this->file_ul_cnt].undo_log = undo;
+        strcpy(file_to_undo_log_map[this->file_ul_cnt].file_name, file_name);
   }
   else {
-    UndoLog* undo = file_to_undo_log_map[file_name];
-    for(auto entry: this->process_to_undo_log_map[pid]->entries) {
+    UndoLog* undo = this->findFileUndoWith(file_name);
+    UndoLog* process_undo = this->findProcessUndoWith(pid);
+    auto entries = this->findProcessUndoWith(pid)->entries;
+    for(int i = 0; i < process_undo->entry_cnt; i++){
+      auto entry = process_undo->entries[i];
       undo->add_to_undo_log(entry.speculator_object, entry.prev_state);
+    // for(auto entry: this->process_to_undo_log_map[pid]->entries) {
+      // undo->add_to_undo_log(entries.speculator_object, entry.prev_state);
     }
     //Add to process undo log
-    UndoLog *process_ul = process_to_undo_log_map[speculator_object->parent_pid];
-    int n = undo->entries.size();
+    UndoLog *process_ul = this->findProcessUndoWith(speculator_object->parent_pid);
+    int n = undo->entry_cnt;
     /* TODO */
     // for(int i = n-2; i >=0; i--){
     //   if(!process_ul->speculation_exists(undo->entries[i])){

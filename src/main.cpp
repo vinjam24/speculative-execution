@@ -19,6 +19,7 @@ int main() {
     char* write_spec_file_name = "./files/example1.txt";
     const char* content = "bhav";
 
+    
 
     // Initialize Cache to Speculate values from
     char cached_value[BUFSIZE];
@@ -32,6 +33,7 @@ int main() {
     // std::cout<<speculator->speculative
     // Main execution
     initializeGlobalSharedObject();
+    
 
     char value[BUFSIZE];
     int fd = open(file_name, O_RDWR);
@@ -40,6 +42,7 @@ int main() {
     cache[fd] = cached_value;
 
     speculative_read(fd, value, BUFSIZE);
+    
  
     
     close(fd);
