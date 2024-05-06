@@ -10,6 +10,7 @@
 
 extern std::map<int,  char*> cache;
 extern Speculator* speculator;
+void initializeGlobalSharedObject() ;
 
 
 #endif

@@ -6,6 +6,8 @@
 #include <ostream>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <fcntl.h>
 
 /*TODO: Change Speculator::speculator_object */
@@ -16,26 +18,29 @@ Speculator::Speculator() {
   speculator_object = new SpeculatorObject;
 }
 
-void Speculator::propogate_buffer(SpeculatorObject* speculator_object) {
-  while (!speculator_object->IO_buffer_queue.empty()) {
-    std::pair<const char *, va_list *> buffer_object =
-      speculator_object->IO_buffer_queue.front();
-    const char *output_string = buffer_object.first;
-    va_list *args = buffer_object.second;
-    vprintf(output_string, *args);
-    speculator_object->IO_buffer_queue.pop();
-  }
-  return;
+void Speculator::propogate_buffer(){
+
+    while(!Speculator::IO_buffer_queue.isEmpty()){
+        std::cout<<"hey "<<IO_buffer_queue.size()<<std::endl;
+
+        std::pair<const char*, va_list*> buffer_object = Speculator::IO_buffer_queue.dequeue();
+        const char* output_string = buffer_object.first;
+        va_list* args = buffer_object.second;
+        std::cout<<"hey "<<output_string<<" "<<buffer_object.second<<std::endl;
+
+        // vprintf(output_string, *args);
+    }
+    return;
 }
 
-void Speculator::discard_buffer(SpeculatorObject* speculator_object) {
-  while (!speculator_object->IO_buffer_queue.empty()) {
-    speculator_object->IO_buffer_queue.pop();
-  }
-  return;
+void Speculator::discard_buffer(){
+    while(!Speculator::IO_buffer_queue.isEmpty()){
+        Speculator::IO_buffer_queue.dequeue();
+    }
+    return;
 }
 
-int Speculator::create_speculation(pid_t pid, pid_t parent_pid, int file_descriptor,
+int Speculator::create_speculation(pid_t ppid, pid_t pid, int file_descriptor,
                                     int buffer_size, int pipe) {
   SpeculatorObject* spec = new SpeculatorObject;
 
@@ -44,46 +49,48 @@ int Speculator::create_speculation(pid_t pid, pid_t parent_pid, int file_descrip
   spec->cache_object = cache[file_descriptor];
   spec->buffer_size = buffer_size;
   spec->pipe_fd = pipe;
-  spec->parent_pid = parent_pid;
+  spec->parent_pid = ppid;
   Speculator::id_to_speculation[Speculator::spec_counter] = spec;
+
+  /*TODO: Remove below*/
 
   speculator_object->is_speculative = true;
   speculator_object->child_pid = pid;
   speculator_object->cache_object = cache[file_descriptor];
   speculator_object->buffer_size = buffer_size;
   speculator_object->pipe_fd = pipe;
-  speculator_object->parent_pid = parent_pid;
+  speculator_object->parent_pid = ppid;
 
-  process_to_undo_log_map[parent_pid] = new UndoLog(pid, spec);
-  spec->undologs.push_back(process_to_undo_log_map[parent_pid]);
+  process_to_undo_log_map[ppid] = new UndoLog(pid, spec);
+  spec->undologs.push_back(process_to_undo_log_map[ppid]);
 
   std::cout << "Created Speculation!" << std::endl;
   return Speculator::spec_counter++;
 }
 
-void Speculator::validate_speculation(std::vector<char> actual_buffer,
-                                      int buffer_size, int spec_id) {
-  bool fail_flag = false;
-  for (int i = 0; i < buffer_size; i++) {
-    if (actual_buffer[i] != speculator_object->cache_object[i]) {
-      speculator_object->cache_object[i] = actual_buffer[i];
-      fail_flag = true;
+void Speculator::validate_speculation(std::vector<char> actual_buffer, int buffer_size, int spec_id){
+    bool fail_flag = false;
+    for(int i=0;i<buffer_size;i++){
+        if(actual_buffer[i] != speculator_object->cache_object[i]){
+            speculator_object->cache_object[i] = actual_buffer[i];
+            fail_flag = true;
+        }
     }
-  }
-  fail_flag ? fail_speculation(spec_id) : commit_speculation(spec_id);
-  return;
+    fail_flag ? fail_speculation(spec_id) : commit_speculation(spec_id);
+    return;
 }
 
 void Speculator::commit_speculation(int spec_id) {
 
-  kill(speculator_object->child_pid, SIGKILL);
+  
   SpeculatorObject* speculator_object = id_to_speculation[spec_id];
 
   // Remove entries in undologs with the given speculator;
 
-  Speculator::propogate_buffer(speculator_object);
+  Speculator::propogate_buffer();
   Speculator::delete_undo_log_entries(speculator_object);
-  speculator_object->is_speculative = false;
+
+  kill(speculator_object->child_pid, SIGKILL);
 
   std::cout << "Commit Speculation!" << std::endl;
   return;
@@ -106,36 +113,19 @@ void Speculator::fail_speculation(int spec_id) {
   kill(speculator_object->child_pid, SIGUSR1);
   std::cout << "Fail Speculation!" << std::endl;
 
-  Speculator::discard_buffer(speculator_object);
-  speculator_object->is_speculative = false;
-  return;
+    Speculator::discard_buffer();
+    Speculator::speculator_object->is_speculative = false;
+    return;
 }
 
-void Speculator::revert_kernel_undo_logs(SpeculatorObject* speculator_object){
-  std::vector<UndoLog*> undos = speculator_object->undologs;
-  for(int i = 0 ; i < undos.size(); i++){
-    undos[i]->revert_till(speculator_object);
-  }
-}
+int Speculator::buffer_IO(const char *output_value, va_list* args)
+{   
+    if(!Speculator::speculator_object->is_speculative){
+        return -1;
+    }
 
-void Speculator::delete_undo_log_entries(SpeculatorObject* speculator_object){
-  int i = 0;
-  std::vector<UndoLog*> undologs = speculator_object->undologs;
-  for(i = 0; i < undologs.size(); i++){
-    UndoLog* ul =  undologs[i];
-    ul->remove_entry(speculator_object);
-  }
-}
-
-int Speculator::buffer_IO(const char *output_value, va_list *args) {
-  /*TODO change here*/
-  if (!Speculator::speculator_object->is_speculative) {
-    return -1;
-  }
-
-  Speculator::speculator_object->IO_buffer_queue.push(
-      std::make_pair(output_value, args));
-  return 0;
+    Speculator::speculator_object->IO_buffer_queue.push(std::make_pair(output_value, args));
+    return 0;
 }
 
 int Speculator::write_speculatively(char* file_name, const char *content,

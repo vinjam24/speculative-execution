@@ -9,7 +9,7 @@
 
 class UndoLog;
 
-typedef struct {
+typedef struct SpeculatorObject{
     pid_t parent_pid;
     pid_t child_pid;
     char* buffer_value;
@@ -22,6 +22,7 @@ typedef struct {
     std::vector<UndoLog*> undologs;
 
 
+    SpeculatorObject(): parent_pid(0) {};
 } SpeculatorObject;
 
 
