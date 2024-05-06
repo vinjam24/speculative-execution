@@ -2,10 +2,10 @@ TARGET_EXEC := final_program
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
-
+CXXFLAGS = -std=c++11 -Wall -Wextra -g
 # Find all the C and C++ files we want to compile
 # Note the single quotes around the * expressions. The shell will incorrectly expand these otherwise, but we want to send the * directly to the find command.
-SRCS := ./src/Speculator.cpp ./src/Globals.cpp ./src/Syscall.cpp ./src/main.cpp
+SRCS := ./src/Speculator.cpp ./src/Globals.cpp ./src/Syscall.cpp ./src/main.cpp ./src/Queue.cpp
 
 # Prepends BUILD_DIR and appends .o to every src file
 # As an example, ./your_dir/hello.cpp turns into ./build/./your_dir/hello.cpp.o

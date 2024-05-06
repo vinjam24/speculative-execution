@@ -7,7 +7,7 @@
 #include <cstdarg>
 
 
-typedef struct {
+typedef struct SpeculatorObject{
     pid_t parent_pid;
     pid_t child_pid;
     char* buffer_value;
@@ -17,6 +17,7 @@ typedef struct {
     bool is_speculative;
     std::queue<std::pair<const char*, va_list*>> IO_buffer_queue;
 
+    SpeculatorObject(): parent_pid(0) {};
 } SpeculatorObject;
 
 
