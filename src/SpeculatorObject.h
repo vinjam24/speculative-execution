@@ -1,17 +1,31 @@
 #ifndef SPECULATOROBJECT_H
 #define SPECULATOROBJECT_H
 
-#include <map>
+#include<sys/types.h>
+#include <queue>
+#include <utility>
+#include <cstdarg>
+#include <vector>
 
-template <typename T1, typename T2>
-class SpeculatorObject{
-    private:
-    public:
-        std::map<T1, T2> kernelObjects;
-        SpeculatorObject<T1, T2>();
-        void set(T1 key, T2 value);
-        T2 get(T1 key);
-};
+#define MAX_UNDOLOGS 1000
+
+class UndoLog;
+
+typedef struct SpeculatorObject{
+    pid_t parent_pid;
+    pid_t child_pid;
+    char* buffer_value;
+    char* cache_object;
+    int pipe_fd;
+    int buffer_size;
+    bool is_speculative;
+    std::queue<std::pair<const char*, va_list*> > IO_buffer_queue;
+    // Speculator object should contain references to UndoLogs
+    std::vector<UndoLog*> undologs;
+
+
+    SpeculatorObject(): parent_pid(0) {};
+} SpeculatorObject;
 
 
 #endif
